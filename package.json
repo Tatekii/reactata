@@ -1,0 +1,22 @@
+{
+	"name": "reactata",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"lint": "eslint --ext .ts,.jsx,.tsx --fix --quiet ./packages"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.4.1",
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "^8.24.1",
+		"eslint": "^9.21.0",
+		"eslint-plugin,": "link:@typescript-eslint/eslint-plugin,",
+		"parser,": "link:@typescript-eslint/parser,",
+		"rollup": "^4.34.8",
+		"typescript": "^5.7.3"
+	}
+}
