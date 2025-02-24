@@ -1,0 +1,14 @@
+{
+	"name": "react",
+	"version": "1.0.0",
+	"description": "React is a JavaScript library for building user interfaces.",
+	"module": "index.ts",
+	"dependencies": {
+		"shared": "workspace:*"
+	},
+	"keywords": [
+		"react"
+	],
+	"author": "",
+	"license": "ISC"
+}
