@@ -59,7 +59,7 @@ function ChildReconciler(shouldTrackSideEffects: boolean) {
 		if (Array.isArray(newChild)) {
 			// TODO: 暂时不处理
 			if (__DEV__) {
-				console.warn('未实现的 reconcile 类型', newChild);
+				console.warn('Array.isArray(newChild)', newChild);
 			}
 		}
 

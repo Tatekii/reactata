@@ -48,4 +48,18 @@ export default [
 			}),
 		],
 	},
+
+	// test-utils
+	{
+		input: `${pkgPath}/test-utils.ts`,
+		output: [
+			{
+				file: `${pkgDistPath}/test-utils.js`,
+				name: "testUtils",
+				format: "umd",
+			},
+		],
+		externals: ["react-dom", "react"],
+		plugins: getBaseRollupPlugins(),
+	},
 ]

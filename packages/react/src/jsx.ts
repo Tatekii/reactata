@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { REACT_ELEMENT_TYPE } from "shared/ReactSymbols"
 import { Type, Ref, Key, Props, ReactElementType, ElementType } from "shared/ReactTypes"
 
@@ -9,17 +10,17 @@ const ReactElement = function (type: Type, key: Key, ref: Ref, props: Props): Re
 		ref,
 		props,
 	}
-
 	return element
+}
+
+export function isValidElement(object: any): object is ReactElementType {
+	return typeof object === "object" && object !== null && object.$$typeof === REACT_ELEMENT_TYPE
 }
 
 export const jsx = (type: ElementType, config: any, ...children: any) => {
 	let key: Key = null
-
 	let ref: Ref = null
-
 	const props: Props = {}
-
 	for (const prop in config) {
 		const val = config[prop]
 		if (prop === "key") {
@@ -38,9 +39,7 @@ export const jsx = (type: ElementType, config: any, ...children: any) => {
 			props[prop] = val
 		}
 	}
-
 	const childrenLength = children.length
-
 	if (childrenLength) {
 		if (childrenLength === 1) {
 			props.children = children[0]
@@ -51,27 +50,38 @@ export const jsx = (type: ElementType, config: any, ...children: any) => {
 	return ReactElement(type, key, ref, props)
 }
 
-export const jsxDEV = (type: ElementType, config: any) => {
-	let key: Key = null
-	let ref: Ref = null
-	const props: Props = {}
+export const jsxDEV = (type: ElementType, config: any,...children: any) => {
+	let key: Key = null;
+	let ref: Ref = null;
+	const props: Props = {};
+
 	for (const prop in config) {
-		const val = config[prop]
-		if (prop === "key") {
+		const val = config[prop];
+		if (prop === 'key') {
 			if (val !== undefined) {
-				key = "" + val
+				key = '' + val;
 			}
-			continue
+			continue;
 		}
-		if (prop === "ref") {
+		if (prop === 'ref') {
 			if (val !== undefined) {
-				ref = val
+				ref = val;
 			}
-			continue
+			continue;
 		}
 		if ({}.hasOwnProperty.call(config, prop)) {
-			props[prop] = val
+			props[prop] = val;
 		}
 	}
-	return ReactElement(type, key, ref, props)
-}
+
+	const childrenLength = children.length;
+	if (childrenLength) {
+		if (childrenLength === 1) {
+			props.children = children[0];
+		} else {
+			props.children = children;
+		}
+	}
+
+	return ReactElement(type, key, ref, props);
+};

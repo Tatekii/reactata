@@ -10,4 +10,4 @@ function App() {
 
 // const jsx = (<h1>hello WORLD</h1>)
 
-root.render(<App />)
+root.render(<App value={'123'}/>)
