@@ -52,13 +52,17 @@ function performUnitOfWork(fiber: FiberNode) {
 	}
 }
 
-// 深度优先遍历兄弟节点或父节点
+// 遍历执行DOM结构构建
 function completeUnitOfWork(fiber: FiberNode) {
 	let node: FiberNode | null = fiber
 	do {
-		// 生成更新计划
-		completeWork(node)
-		// 有兄弟节点，则遍历兄弟节点
+		const next = completeWork(node) as FiberNode | null;
+		if (next !== null) {
+			workInProgress = next;
+			return;
+		}
+
+		// 有兄弟节点
 		const sibling = node.sibling
 		if (sibling !== null) {
 			workInProgress = sibling
@@ -80,9 +84,17 @@ export function scheduleUpdateOnFiber(fiber: FiberNode) {
 // 从触发更新的节点向上遍历到 FiberRootNode
 function markUpdateFromFiberToRoot(fiber: FiberNode) {
 	let node = fiber
+
 	while (node.return !== null) {
 		node = node.return
 	}
+
+
+	if (workInProgress !== null) {
+		console.error('render阶段结束时 workInProgress 须不为 null');
+	}
+
+
 	if (node.tag == HostRoot) {
 		return node.stateNode
 	}

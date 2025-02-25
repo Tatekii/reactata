@@ -1,7 +1,7 @@
 import { appendInitialChild, Container, createInstance, createTextInstance } from "hostConfig"
 import { FiberNode } from "./fiber"
 import { FunctionComponent, HostComponent, HostRoot, HostText } from "./workTags"
-import { NoFlags } from "./fiberFlags"
+import { NoFlags, Update } from "./fiberFlags"
 
 // 收集更新 flags,构建DOM结构
 export const completeWork = (workInProgress: FiberNode) => {
@@ -14,7 +14,8 @@ export const completeWork = (workInProgress: FiberNode) => {
 
 		case HostComponent:
 			if (current !== null && workInProgress.stateNode !== null) {
-				// TODO: 组件的更新阶段
+				//  组件的更新阶段
+				updateHostComponent(current, workInProgress);
 			} else {
 				// 首屏渲染阶段
 				// 构建 DOM
@@ -28,7 +29,8 @@ export const completeWork = (workInProgress: FiberNode) => {
 
 		case HostText:
 			if (current !== null && workInProgress.stateNode !== null) {
-				// TODO: 组件的更新阶段
+				//  组件的更新阶段
+				updateHostText(current, workInProgress);
 			} else {
 				// 首屏渲染阶段
 				// 构建 DOM
@@ -47,7 +49,7 @@ export const completeWork = (workInProgress: FiberNode) => {
 			if (__DEV__) {
 				console.warn("completeWork 未实现的类型", workInProgress)
 			}
-			return null
+			break
 	}
 }
 
@@ -109,4 +111,39 @@ function bubbleProperties(workInProgress: FiberNode) {
 	}
 
 	workInProgress.subtreeFlags |= subtreeFlags
+}
+
+
+
+/**
+ * 对比文字更新
+ * @param current 
+ * @param workInProgress 
+ */
+function updateHostText(current: FiberNode, workInProgress: FiberNode) {
+	const oldText = current.memorizedProps.content;
+	const newText = workInProgress.pendingProps.content;
+	if (oldText !== newText) {
+		markUpdate(workInProgress);
+	}
+}
+
+
+/**
+ * 对比DOM标签更新
+ * @param current 
+ * @param workInProgress 
+ */
+function updateHostComponent(current: FiberNode, workInProgress: FiberNode) {
+	const oldProps = current.memorizedProps;
+	const newProps = workInProgress.pendingProps;
+
+	if (oldProps !== newProps) {
+		markUpdate(workInProgress);
+	}
+}
+
+// 为 Fiber 节点增加 Update flags
+function markUpdate(workInProgress: FiberNode) {
+	workInProgress.flags |= Update;
 }

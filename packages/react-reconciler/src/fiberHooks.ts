@@ -1,7 +1,7 @@
 import { Dispatch, Dispatcher } from "react/src/currentDispatcher"
 import { FiberNode } from "./fiber"
 import internals from "shared/internals"
-import { createUpdate, createUpdateQueue, enqueueUpdate, UpdateQueue } from "./updateQueue"
+import { createUpdate, createUpdateQueue, enqueueUpdate, processUpdateQueue, UpdateQueue } from "./updateQueue"
 import { Action } from "shared/ReactTypes"
 import { scheduleUpdateOnFiber } from "./workLoop"
 
@@ -15,9 +15,10 @@ export interface Hook {
 
 // 当前正在处理的 FiberNode
 let currentlyRenderingFiber: FiberNode | null = null
-
 // Hooks 链表中当前正在处理的 Hook
 let workInProgressHook: Hook | null = null
+let currentHook: Hook | null = null;
+
 
 /**
  * 执行函数组件
@@ -28,7 +29,13 @@ export function renderWithHooks(workInProgress: FiberNode) {
 	currentlyRenderingFiber = workInProgress
 	workInProgress.memorizedState = null
 
+
+
 	const current = workInProgress.alternate
+
+	if (__DEV__) {
+		console.log(current !== null ? 'renderWithHooks组件更新' : 'renderWithHooks首屏渲染');
+	}
 
 	if (current !== null) {
 		// update
@@ -46,6 +53,7 @@ export function renderWithHooks(workInProgress: FiberNode) {
 
 	currentlyRenderingFiber = null
 	workInProgressHook = null
+	currentHook = null
 
 	return children
 }
@@ -82,9 +90,78 @@ function mountState<State>(initialState: (() => State) | State): [State, Dispatc
 	return [memorizedState, dispatch]
 }
 
-function updateState<T>(initialState: T | (() => T)): [T, Dispatch<T>] {
-	// TODO
-	throw new Error("Function not implemented.")
+function updateState<State>(initialState: State | (() => State)): [State, Dispatch<State>] {
+	if (__DEV__) {
+		console.log('updateState');
+	}
+	// 当前正在工作的 useState
+	const hook = updateWorkInProgressHook();
+
+	// 计算新 state
+	const queue = hook.queue as UpdateQueue<State>
+	const pending = queue.shared.pending;
+
+	if (pending !== null) {
+		const { memorizedState } = processUpdateQueue(hook.memorizedState, pending);
+		hook.memorizedState = memorizedState;
+	}
+	return [hook.memorizedState, queue.dispatch as Dispatch<State>];
+}
+
+
+function updateWorkInProgressHook(): Hook {
+
+	// hook 链表
+	let nextCurrentHook: Hook | null;
+
+	if (currentHook == null) {
+		// 这是函数组件 update 时的第一个 hook
+		const current = (currentlyRenderingFiber as FiberNode).alternate;
+
+		if (current === null) {
+			nextCurrentHook = null;
+		} else {
+			nextCurrentHook = current.memorizedState;
+		}
+	} else {
+		nextCurrentHook = currentHook.next;
+	}
+
+	if (nextCurrentHook == null) {
+		throw new Error(
+			`组件 ${currentlyRenderingFiber?.type} 本次执行时的 Hooks 比上次执行多`
+		);
+	}
+
+	currentHook = nextCurrentHook as Hook;
+
+	const newHook: Hook = {
+		memorizedState: currentHook.memorizedState,
+		queue: currentHook.queue,
+		next: null
+	};
+
+	if (workInProgressHook == null) {
+		// update 时的第一个hook
+		if (currentlyRenderingFiber !== null) {
+
+			workInProgressHook = newHook;
+
+			currentlyRenderingFiber.memorizedState = workInProgressHook;
+
+		} else {
+			// currentlyRenderingFiber == null 代表 Hook 执行的上下文不是一个函数组件
+			throw new Error('Hooks 只能在函数组件中执行');
+		}
+	} else {
+		// update 时的其他 hook
+		
+		workInProgressHook.next = newHook;
+		// 链接链表并移动指针
+		workInProgressHook = newHook;
+	}
+
+	return workInProgressHook;
 }
 
 function mountWorkInProgressHook(): Hook {

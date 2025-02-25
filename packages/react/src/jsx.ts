@@ -74,14 +74,14 @@ export const jsxDEV = (type: ElementType, config: any,...children: any) => {
 		}
 	}
 
-	const childrenLength = children.length;
-	if (childrenLength) {
-		if (childrenLength === 1) {
-			props.children = children[0];
-		} else {
-			props.children = children;
-		}
-	}
+	// const childrenLength = children.length;
+	// if (childrenLength) {
+	// 	if (childrenLength === 1) {
+	// 		props.children = children[0];
+	// 	} else {
+	// 		props.children = children;
+	// 	}
+	// }
 
 	return ReactElement(type, key, ref, props);
 };
