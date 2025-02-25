@@ -12,3 +12,6 @@ export interface ReactElementType {
 	ref: Ref
 	type: ElementType
 }
+
+
+export type Action<State> = State | ((prevState: State) => State);

@@ -1,5 +1,3 @@
-// tsconfig.json
-
 {
 	"compileOnSave": true,
 	"include": ["./packages/**/*"],
@@ -22,6 +20,7 @@
 		"baseUrl": "./packages",
 		"paths": {
 			"hostConfig": ["./react-reconciler/src/hostConfig.ts"]
-		}
+		},
+		"types": ["./global.d.ts"]
 	}
 }

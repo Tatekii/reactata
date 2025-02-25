@@ -1,7 +1,8 @@
 // packages/react-reconciler/src/fiber.ts
-import { Props, Key, Ref } from "shared/ReactTypes"
-import { WorkTag } from "./workTags"
+import { Props, Key, Ref, ReactElementType } from "shared/ReactTypes"
+import { FunctionComponent, HostComponent, WorkTag } from "./workTags"
 import { NoFlags, Flags } from "./fiberFlags"
+import { Container } from "hostConfig"
 
 
 /** fiber节点 */
@@ -47,4 +48,90 @@ export class FiberNode {
 		this.subtreeFlags = NoFlags // 表示子节点的副作用类型，如更新、插入、删除等
 		this.updateQueue = null // 更新计划队列
 	}
+}
+
+
+export class FiberRootNode {
+	container: Container;
+	current: FiberNode;
+	finishedWork: FiberNode | null;
+	
+	constructor(container: Container, hostRootFiber: FiberNode) {
+		this.container = container;
+		this.current = hostRootFiber;
+		// 将根节点的 stateNode 属性指向 FiberRootNode，用于表示整个 React 应用的根节点
+		hostRootFiber.stateNode = this;
+		// 指向更新完成之后的 hostRootFiber
+		this.finishedWork = null;
+	}
+}
+
+
+
+
+
+/**
+ * 根据 FiberRootNode.current 创建 workInProgress 树
+ * @param current 
+ * @param pendingProps 
+ * @returns 
+ */
+export const createWorkInProgress = (
+	current: FiberNode,
+	pendingProps: Props
+): FiberNode => {
+	let workInProgress = current.alternate;
+
+	if (workInProgress == null) {
+		// 首屏渲染时（mount）
+		workInProgress = new FiberNode(current.tag, pendingProps, current.key);
+		workInProgress.stateNode = current.stateNode;
+
+		// 双缓存
+		// current与workInProgress
+		workInProgress.alternate = current;
+		current.alternate = workInProgress;
+	} else {
+		// 非首屏渲染时（update）
+		workInProgress.pendingProps = pendingProps;
+		// 清空effect
+		workInProgress.flags = NoFlags;
+		workInProgress.subtreeFlags = NoFlags;
+	}
+
+	workInProgress.type = current.type;
+	workInProgress.updateQueue = current.updateQueue;
+	workInProgress.child = current.child;
+	workInProgress.memoizedProps = current.memoizedProps;
+	workInProgress.memoizedState = current.memoizedState;
+
+	return workInProgress;
+};
+
+
+
+/**
+ * 庚根据
+ * @param element 
+ * @returns 
+ */
+export function createFiberFromElement(element: ReactElementType): FiberNode {
+
+	const { type, key, props } = element;
+
+	let fiberTag: WorkTag = FunctionComponent;
+
+	if (typeof type == 'string') {
+		// DOM标签节点
+		fiberTag = HostComponent;
+	} else if (typeof type !== 'function' && __DEV__) {
+
+		console.warn('未定义的 type 类型', element);
+	}
+
+	const fiber = new FiberNode(fiberTag, props, key);
+
+	fiber.type = type;
+	
+	return fiber;
 }
