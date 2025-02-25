@@ -9,6 +9,7 @@ const ReactElement = function (type: Type, key: Key, ref: Ref, props: Props): Re
 		ref,
 		props,
 	}
+
 	return element
 }
 
