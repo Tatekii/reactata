@@ -16,8 +16,8 @@ export class FiberNode {
 	index: number
 	ref: Ref
 	pendingProps: Props
-	memoizedProps: Props | null
-	memoizedState: any
+	memorizedProps: Props | null
+	memorizedState: any
 	alternate: FiberNode | null
 	flags: Flags
 	subtreeFlags: Flags
@@ -39,8 +39,8 @@ export class FiberNode {
 
 		// 作为工作单元
 		this.pendingProps = pendingProps // 表示节点的新属性，用于在协调过程中进行更新
-		this.memoizedProps = null // 已经更新完的属性
-		this.memoizedState = null // 更新完成后新的 State
+		this.memorizedProps = null // 已经更新完的属性
+		this.memorizedState = null // 更新完成后新的 State
 
 		this.alternate = null // 上一次更新的fiberNode
 		this.flags = NoFlags // 表示节点的副作用类型，如更新、插入、删除等
@@ -93,18 +93,19 @@ export const createWorkInProgress = (current: FiberNode, pendingProps: Props): F
 	workInProgress.type = current.type
 	workInProgress.updateQueue = current.updateQueue
 	workInProgress.child = current.child
-	workInProgress.memoizedProps = current.memoizedProps
-	workInProgress.memoizedState = current.memoizedState
+	workInProgress.memorizedProps = current.memorizedProps
+	workInProgress.memorizedState = current.memorizedState
 
 	return workInProgress
 }
 
 /**
- * 庚根据
+ * 根据reactElement创建fiberNode
  * @param element
  * @returns
  */
 export function createFiberFromElement(element: ReactElementType): FiberNode {
+
 	console.log("createFiberFromElement", element)
 
 	const { type, key, props } = element

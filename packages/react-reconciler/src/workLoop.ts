@@ -41,7 +41,7 @@ function performUnitOfWork(fiber: FiberNode) {
 	// 比较并返回子 FiberNode
 	const next = beginWork(fiber)
 
-	fiber.memoizedProps = fiber.pendingProps
+	fiber.memorizedProps = fiber.pendingProps
 
 	if (next == null) {
 		// 没有子节点，则遍历兄弟节点或父节点

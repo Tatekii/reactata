@@ -34,7 +34,7 @@ export const beginWork = (workInProgress: FiberNode) => {
 }
 
 function updateHostRoot(workInProgress: FiberNode) {
-	const baseState = workInProgress.memoizedState
+	const baseState = workInProgress.memorizedState
 	const updateQueue = workInProgress.updateQueue as UpdateQueue<Element>
 	const pending = updateQueue.shared.pending
 	// 清空更新链表
@@ -42,11 +42,12 @@ function updateHostRoot(workInProgress: FiberNode) {
 	updateQueue.shared.pending = null
 
 	// 计算待更新状态的最新值
-	const { memoizedState } = processUpdateQueue(baseState, pending)
-	workInProgress.memoizedState = memoizedState
+	const { memorizedState } = processUpdateQueue(baseState, pending)
+	
+	workInProgress.memorizedState = memorizedState
 
 	// 处理子节点的更新逻辑
-	const nextChildren = workInProgress.memoizedState
+	const nextChildren = workInProgress.memorizedState
 	reconcileChildren(workInProgress, nextChildren)
 
 	// 返回新的子节点

@@ -1,19 +1,26 @@
 import { Action } from "shared/ReactTypes"
 import { Update } from "./fiberFlags"
+import { Dispatch } from "react/src/currentDispatcher"
+import { Lane } from "./fiberLane"
 
+// 定义 Update 数据结构
 export interface Update<State> {
 	action: Action<State>
+	next: Update<any> | null
 }
 
+// 定义 UpdateQueue 数据结构
 export interface UpdateQueue<State> {
 	shared: {
 		pending: Update<State> | null
 	}
+	dispatch: Dispatch<State> | null
 }
 
 export const createUpdate = <State>(action: Action<State>): Update<State> => {
 	return {
 		action,
+		next: null,
 	}
 }
 
@@ -22,6 +29,7 @@ export const createUpdateQueue = <State>(): UpdateQueue<State> => {
 		shared: {
 			pending: null,
 		},
+		dispatch: null,
 	}
 }
 
@@ -43,17 +51,17 @@ export const enqueueUpdate = <State>(updateQueue: UpdateQueue<State>, update: Up
 export const processUpdateQueue = <State>(
 	baseState: State,
 	pendingUpdate: Update<State> | null
-): { memoizedState: State } => {
+): { memorizedState: State } => {
 	const result: ReturnType<typeof processUpdateQueue<State>> = {
-		memoizedState: baseState,
+		memorizedState: baseState,
 	}
 	if (pendingUpdate !== null) {
 		const action = pendingUpdate.action
 		// 判断Update中的action类型，是函数的话讲更新前的state传入执行
 		if (action instanceof Function) {
-			result.memoizedState = action(baseState)
+			result.memorizedState = action(baseState)
 		} else {
-			result.memoizedState = action
+			result.memorizedState = action
 		}
 	}
 	return result
