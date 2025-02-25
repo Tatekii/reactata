@@ -1,19 +1,27 @@
 // packages/react-reconciler/src/workLoop.ts
 import { beginWork } from "./beginWork"
+import { commitMutationEffects } from "./commitWork"
 import { completeWork } from "./completeWork"
 import { createWorkInProgress, FiberNode, FiberRootNode } from "./fiber"
+import { MutationMask, NoFlags } from "./fiberFlags"
 import { HostRoot } from "./workTags"
 
 let workInProgress: FiberNode | null = null
 
 function renderRoot(root: FiberRootNode) {
 	prepareFreshStack(root)
+
 	try {
 		workLoop()
 	} catch (e) {
 		console.warn(e)
 		workInProgress = null
 	}
+
+	const finishedWork = root.current.alternate
+	root.finishedWork = finishedWork
+
+	commitRoot(root)
 }
 
 // 初始化
@@ -79,4 +87,46 @@ function markUpdateFromFiberToRoot(fiber: FiberNode) {
 		return node.stateNode
 	}
 	return null
+}
+
+
+
+/**
+ * commit阶段
+ * @param root 
+ * @returns 
+ */
+function commitRoot(root: FiberRootNode) {
+	const finishedWork = root.finishedWork
+
+	if (finishedWork === null) {
+		return
+	}
+
+	if (__DEV__) {
+		console.log("commit 阶段开始")
+	}
+
+	root.finishedWork = null
+
+
+	const subtreeHasEffects = (finishedWork.subtreeFlags & MutationMask) !== NoFlags
+
+	const rootHasEffects = (finishedWork.flags & MutationMask) !== NoFlags
+
+	if (subtreeHasEffects || rootHasEffects) {
+
+		// beforeMutation
+
+
+		// mutation
+		commitMutationEffects(finishedWork)
+
+		root.current = finishedWork
+
+		// layout
+
+	} else {
+		root.current = finishedWork
+	}
 }
