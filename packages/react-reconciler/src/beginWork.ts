@@ -2,8 +2,9 @@
 import { ReactElementType } from "shared/ReactTypes"
 import { FiberNode } from "./fiber"
 import { UpdateQueue, processUpdateQueue } from "./updateQueue"
-import { HostComponent, HostRoot, HostText } from "./workTags"
+import { FunctionComponent, HostComponent, HostRoot, HostText } from "./workTags"
 import { reconcileChildFibers, mountChildFibers } from "./childFiber"
+import { renderWithHooks } from "./fiberHooks"
 
 /**
  *
@@ -21,6 +22,9 @@ export const beginWork = (workInProgress: FiberNode) => {
 		// 文字节点
 		case HostText:
 			return updateHostText()
+		// 函数组件
+		case FunctionComponent:
+			return updateFunctionComponent(workInProgress)
 		default:
 			if (__DEV__) {
 				console.warn("beginWork 未实现的类型", workInProgress.tag)
@@ -71,4 +75,11 @@ function reconcileChildren(workInProgress: FiberNode, children?: ReactElementTyp
 		// 更新阶段
 		workInProgress.child = reconcileChildFibers(workInProgress, current?.child, children)
 	}
+}
+
+
+function updateFunctionComponent(workInProgress: FiberNode) {
+	const nextChildren = renderWithHooks(workInProgress);
+	reconcileChildren(workInProgress, nextChildren);
+	return workInProgress.child;
 }

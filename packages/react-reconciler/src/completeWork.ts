@@ -1,9 +1,9 @@
 import { appendInitialChild, Container, createInstance, createTextInstance } from "hostConfig"
 import { FiberNode } from "./fiber"
-import { HostComponent, HostRoot, HostText } from "./workTags"
+import { FunctionComponent, HostComponent, HostRoot, HostText } from "./workTags"
 import { NoFlags } from "./fiberFlags"
 
-// 生成更新计划，计算和收集更新 flags
+// 收集更新 flags,构建DOM结构
 export const completeWork = (workInProgress: FiberNode) => {
 	const newProps = workInProgress.pendingProps
 	const current = workInProgress.alternate
@@ -39,6 +39,10 @@ export const completeWork = (workInProgress: FiberNode) => {
 			bubbleProperties(workInProgress)
 			return null
 
+		case FunctionComponent:
+			bubbleProperties(workInProgress)
+			return null
+
 		default:
 			if (__DEV__) {
 				console.warn("completeWork 未实现的类型", workInProgress)
@@ -47,13 +51,11 @@ export const completeWork = (workInProgress: FiberNode) => {
 	}
 }
 
-
-
 /**
- * 
- * @param parent 
- * @param workInProgress 
- * @returns 
+ *
+ * @param parent
+ * @param workInProgress
+ * @returns
  */
 function appendAllChildren(parent: Container, workInProgress: FiberNode) {
 	let node = workInProgress.child
@@ -85,10 +87,9 @@ function appendAllChildren(parent: Container, workInProgress: FiberNode) {
 	}
 }
 
-
 /**
  * 冒泡更新flags
- * @param workInProgress 
+ * @param workInProgress
  */
 function bubbleProperties(workInProgress: FiberNode) {
 	// 清理子flag
