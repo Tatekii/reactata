@@ -5,46 +5,72 @@ import { HostText } from "./workTags"
 import { ChildDeletion, Placement } from "./fiberFlags"
 
 function ChildReconciler(shouldTrackSideEffects: boolean) {
+	/**
+	 * 协调单个element
+	 * @param returnFiber
+	 * @param currentFiber
+	 * @param element
+	 * @returns
+	 */
 	function reconcileSingleElement(returnFiber: FiberNode, currentFiber: FiberNode | null, element: ReactElementType) {
 		// 组件的更新阶段
-		if (currentFiber !== null) {
+		while (currentFiber !== null) {
 			if (currentFiber.key === element.key) {
 				if (element.$$typeof === REACT_ELEMENT_TYPE) {
 					if (currentFiber.type === element.type) {
-						// key 和 type 都相同，复用旧的 Fiber 节点
+						// NOTE key 和 type 都相同，复用旧的 Fiber 节点
 						const existing = useFiber(currentFiber, element.props)
 						existing.return = returnFiber
+						// 删除余下所有兄弟节点
+						deleteRemainingChildren(currentFiber, currentFiber.sibling)
+
 						return existing
 					}
-					// key 相同，但 type 不同，删除旧的 Fiber 节点
-					deleteChild(returnFiber, currentFiber)
+					// NOTE key 相同，但 type 不同，删除旧的 Fiber 节点
+					// 删除余下所有兄弟节点
+					deleteRemainingChildren(currentFiber, currentFiber.sibling)
+					break
 				} else {
 					if (__DEV__) {
 						console.warn("还未实现的 React 类型", element)
 					}
 				}
 			} else {
-				// key 不同，删除旧的 Fiber 节点
+				// NOTE key不同，删除旧的 Fiber 节点
 				deleteChild(returnFiber, currentFiber)
+				// 移动到兄弟节点
+				currentFiber = currentFiber.sibling
 			}
 		}
+
 		// 创建新的 Fiber 节点
 		const fiber = createFiberFromElement(element)
 		fiber.return = returnFiber
 		return fiber
 	}
 
+	/**
+	 * 协调单个文本
+	 * @param returnFiber
+	 * @param currentFiber
+	 * @param content
+	 * @returns
+	 */
 	function reconcileSingleTextNode(returnFiber: FiberNode, currentFiber: FiberNode | null, content: string | number) {
-		if (currentFiber !== null) {
+		while (currentFiber !== null) {
 			// 组件的更新阶段
 			if (currentFiber.tag === HostText) {
 				// 复用旧的 Fiber 节点
 				const existing = useFiber(currentFiber, { content })
 				existing.return = returnFiber
+				// 删除余下所有兄弟节点
+				deleteRemainingChildren(currentFiber, currentFiber.sibling)
 				return existing
 			} else {
 				// 删除旧的 Fiber 节点
 				deleteChild(returnFiber, currentFiber)
+				// 移动指针
+				currentFiber = currentFiber.sibling
 			}
 		}
 		// 创建新的 Fiber 节点
@@ -71,23 +97,37 @@ function ChildReconciler(shouldTrackSideEffects: boolean) {
 		return clone
 	}
 
-
 	/**
 	 * 删除子节点
-	 * @param returnFiber 
-	 * @param childToDelete 
-	 * @returns 
+	 * @param returnFiber
+	 * @param childToDelete
+	 * @returns
 	 */
 	function deleteChild(returnFiber: FiberNode, childToDelete: FiberNode): void {
 		if (!shouldTrackSideEffects) {
-			return;
+			return
 		}
-		const deletions = returnFiber.deletions;
+		const deletions = returnFiber.deletions
 		if (deletions === null) {
-			returnFiber.deletions = [childToDelete];
-			returnFiber.flags |= ChildDeletion;
+			returnFiber.deletions = [childToDelete]
+			returnFiber.flags |= ChildDeletion
 		} else {
-			deletions.push(childToDelete);
+			deletions.push(childToDelete)
+		}
+	}
+
+	/**
+	 * 删除当前节点的所有兄弟节点
+	 * @param returnFiber
+	 * @param currentFirstChild
+	 * @returns
+	 */
+	function deleteRemainingChildren(returnFiber: FiberNode, currentFirstChild: FiberNode | null): void {
+		if (!shouldTrackSideEffects) return
+		let childToDelete = currentFirstChild
+		while (childToDelete !== null) {
+			deleteChild(returnFiber, childToDelete)
+			childToDelete = childToDelete.sibling
 		}
 	}
 
@@ -111,12 +151,9 @@ function ChildReconciler(shouldTrackSideEffects: boolean) {
 			}
 		}
 
-		// 多个 Fragment 节点
+		// 多个 节点
 		if (Array.isArray(newChild)) {
-			// TODO: 暂时不处理
-			if (__DEV__) {
-				console.warn("Array.isArray(newChild)", newChild)
-			}
+			console.warn("未实现的 reconcile 类型", newChild)
 		}
 
 		// 文本节点
