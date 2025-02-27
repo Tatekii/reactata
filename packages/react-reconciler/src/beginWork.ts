@@ -1,4 +1,3 @@
-// packages/react-reconciler/src/beginWork.ts
 import { ReactElementType } from "shared/ReactTypes"
 import { FiberNode } from "./fiber"
 import { UpdateQueue, processUpdateQueue } from "./updateQueue"

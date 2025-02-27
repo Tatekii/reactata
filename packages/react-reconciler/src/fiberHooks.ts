@@ -69,6 +69,11 @@ const HooksDispatcherOnUpdate: Dispatcher = {
 function mountState<State>(initialState: (() => State) | State): [State, Dispatch<State>] {
 	// 当前正在处理的 useState
 	const hook = mountWorkInProgressHook()
+
+	if(__DEV__){
+		console.log('mount state',hook,initialState);
+	}
+	
 	// 获取当前 useState 对应的 Hook 数据
 	let memorizedState
 
@@ -91,11 +96,12 @@ function mountState<State>(initialState: (() => State) | State): [State, Dispatc
 }
 
 function updateState<State>(initialState: State | (() => State)): [State, Dispatch<State>] {
-	if (__DEV__) {
-		console.log('updateState');
-	}
 	// 当前正在工作的 useState
 	const hook = updateWorkInProgressHook();
+
+	if(__DEV__){
+		console.log('update state',hook,initialState);
+	}
 
 	// 计算新 state
 	const queue = hook.queue as UpdateQueue<State>
@@ -119,13 +125,18 @@ function updateWorkInProgressHook(): Hook {
 		const current = (currentlyRenderingFiber as FiberNode).alternate;
 
 		if (current === null) {
+
 			nextCurrentHook = null;
+
 		} else {
+
 			nextCurrentHook = current.memorizedState;
+
 		}
 	} else {
 		nextCurrentHook = currentHook.next;
 	}
+
 
 	if (nextCurrentHook == null) {
 		throw new Error(
@@ -173,8 +184,11 @@ function mountWorkInProgressHook(): Hook {
 	if (workInProgressHook == null) {
 		// 第一个hook
 		if (currentlyRenderingFiber !== null) {
+
 			workInProgressHook = hook
+
 			currentlyRenderingFiber.memorizedState = workInProgressHook
+
 		} else {
 			// currentlyRenderingFiber == null 代表 Hook 执行的上下文不是一个函数组件
 			throw new Error("Hooks 只能在函数组件中执行")

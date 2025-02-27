@@ -121,7 +121,7 @@ function bubbleProperties(workInProgress: FiberNode) {
  * @param workInProgress 
  */
 function updateHostText(current: FiberNode, workInProgress: FiberNode) {
-	const oldText = current.memorizedProps.content;
+	const oldText = current.memorizedProps!.content;
 	const newText = workInProgress.pendingProps.content;
 	if (oldText !== newText) {
 		markUpdate(workInProgress);

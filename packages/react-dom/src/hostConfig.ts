@@ -1,13 +1,17 @@
-import { FiberNode } from "react-reconciler/src/fiber";
-import { HostComponent, HostText } from "react-reconciler/src/workTags";
+import { FiberNode } from "react-reconciler/src/fiber"
+import { HostComponent, HostText } from "react-reconciler/src/workTags"
+import { DOMElement, updateFiberProps } from "./SyntheticEvent"
 
 export type Container = Element
 export type Instance = Element
-export type TextInstance = Text;
+export type TextInstance = Text
 
 export const createInstance = (type: string, porps: any): Instance => {
-	// TODO: 处理 props
 	const element = document.createElement(type)
+
+	// DOM上挂载参数
+	updateFiberProps(element as unknown as DOMElement, porps)
+
 	return element
 }
 
@@ -24,38 +28,30 @@ export const appendChildToContainer = (child: Instance, parent: Instance | Conta
 	parent.appendChild(child)
 }
 
-
 export const commitUpdate = (fiber: FiberNode) => {
 	if (__DEV__) {
-		console.log('执行 Update 操作', fiber);
+		console.log("执行 Update 操作", fiber)
 	}
 	switch (fiber.tag) {
 		// DOM节点
 		case HostComponent:
-			// TODO
-			break;
+			return updateFiberProps(fiber.stateNode, fiber.memorizedProps)
 		// 文字节点
 		case HostText:
-			const text = fiber.memorizedProps.content;
-			commitTextUpdate(fiber.stateNode, text);
-			break;
+			const text = fiber.memorizedProps?.content
+			commitTextUpdate(fiber.stateNode, text)
+			break
 		default:
 			if (__DEV__) {
-				console.warn('未实现的 commitUpdate 类型', fiber);
+				console.warn("未实现的 commitUpdate 类型", fiber)
 			}
 	}
-};
+}
 
-export const commitTextUpdate = (
-	textInstance: TextInstance,
-	content: string
-) => {
-	textInstance.textContent = content;
-};
+export const commitTextUpdate = (textInstance: TextInstance, content: string) => {
+	textInstance.textContent = content
+}
 
-export const removeChild = (
-	child: Instance | TextInstance,
-	container: Container
-) => {
-	container.removeChild(child);
-};
+export const removeChild = (child: Instance | TextInstance, container: Container) => {
+	container.removeChild(child)
+}
