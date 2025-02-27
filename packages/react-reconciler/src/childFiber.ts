@@ -4,6 +4,9 @@ import { REACT_ELEMENT_TYPE } from "shared/ReactSymbols"
 import { HostText } from "./workTags"
 import { ChildDeletion, Placement } from "./fiberFlags"
 
+
+interface ExistingChildren extends Map<string,FiberNode>{}
+
 function ChildReconciler(shouldTrackSideEffects: boolean) {
 	/**
 	 * 协调单个element
@@ -77,6 +80,146 @@ function ChildReconciler(shouldTrackSideEffects: boolean) {
 		const fiber = new FiberNode(HostText, { content }, null)
 		fiber.return = returnFiber
 		return fiber
+	}
+
+	/**
+	 * 多节点diff
+	 * @param returnFiber
+	 * @param currentFirstChild
+	 * @param newChild
+	 * @returns
+	 */
+	function reconcileChildrenArray(returnFiber: FiberNode, currentFirstChild: FiberNode | null, newChild: any[]) {
+		// 最后一个可复用 Fiber 在 current 中的 index
+		let lastPlacedIndex: number = 0
+		// 创建的第一个新 Fiber
+		let firstNewFiber: FiberNode | null = null
+		// 创建的最后一个新 Fiber
+		let lastNewFiber: FiberNode | null = null
+
+		// 保存current的子节点到Map中，以key为键
+		const existingChildren: ExistingChildren = new Map()
+
+		let current = currentFirstChild
+
+		while (current !== null) {
+			// NOTE fallback到了index
+			const keyToUse = current.key !== null ? current.key : current.index.toString()
+
+			existingChildren.set(keyToUse, current)
+
+			current = current.sibling
+		}
+
+		// 遍历workInProgress 的子节点
+		for (let i = 0; i < newChild.length; i++) {
+			const after = newChild[i]
+
+			// 查找有无可复用节点，没有则新建
+			const newFiber = updateFromMap(returnFiber, existingChildren, i, after)
+
+			if (newFiber == null) {
+				continue
+			}
+
+			newFiber.index = i
+			newFiber.return = returnFiber
+
+			// 新建的节点也作为一条链表
+			if (lastNewFiber == null) {
+				lastNewFiber = newFiber
+				firstNewFiber = newFiber
+			} else {
+				lastNewFiber.sibling = newFiber
+				lastNewFiber = lastNewFiber.sibling
+			}
+
+			if (!shouldTrackSideEffects) {
+				continue
+			}
+
+			const current = newFiber.alternate
+			if (current !== null) {
+				// 更新阶段
+				// 对比新旧节点的位置
+				const oldIndex = current.index
+				if (oldIndex < lastPlacedIndex) {
+					// 标记移动
+					newFiber.flags |= Placement
+					continue
+				} else {
+					// 在该节点左边都是可复用的
+					lastPlacedIndex = oldIndex
+				}
+			} else {
+				// 首屏渲染阶段，标记插入
+				newFiber.flags |= Placement
+			}
+		}
+
+		// 标记删除操作
+		existingChildren.forEach((fiber) => {
+			deleteChild(returnFiber, fiber)
+		})
+
+		// 返回子头节点
+		return firstNewFiber
+	}
+
+
+	/**
+	 * 查找有无可复用节点，没有则新建
+	 * @param returnFiber 
+	 * @param existingChildren 
+	 * @param index 
+	 * @param element 
+	 * @returns 
+	 */
+	function updateFromMap(
+		returnFiber: FiberNode,
+		existingChildren: ExistingChildren,
+		index: number,
+		element: any
+	): FiberNode | null {
+
+		const keyToUse = element.key !== null ? element.key : index.toString()
+
+		const before = existingChildren.get(keyToUse)
+
+		// 文本节点
+		if (typeof element === "string" || typeof element === "number") {
+			// 可复用，复用旧的 Fiber 节点
+			if (before && before.tag === HostText) {
+				existingChildren.delete(keyToUse)
+				return useFiber(before, { content: element + "" })
+			}
+			// 不可复用，创建新的 Fiber 节点
+			return new FiberNode(HostText, { content: element + "" }, null)
+		}
+
+		// 组件
+		if (typeof element === "object" && element !== null) {
+			switch (element.$$typeof) {
+				case REACT_ELEMENT_TYPE:
+					// 可复用，复用旧的 Fiber 节点
+					if (before && before.type === element.type) {
+						existingChildren.delete(keyToUse)
+						return useFiber(before, element.props)
+					}
+					// 不可复用，创建新的 Fiber 节点
+					return createFiberFromElement(element)
+
+				// TODO case REACT_FRAGMENT_TYPE
+				default:
+					break
+			}
+		}
+
+		// TODO 数组类型的element，如：<ul>{[<li/>, <li/>]}</ul>
+		if (Array.isArray(element) && __DEV__) {
+			console.warn("还未实现数组类型的child", element)
+		}
+		return null
 	}
 
 	function placeSingleChild(fiber: FiberNode) {

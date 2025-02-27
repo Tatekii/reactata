@@ -28,6 +28,14 @@ export const appendChildToContainer = (child: Instance, parent: Instance | Conta
 	parent.appendChild(child)
 }
 
+export const insertChildToContainer = (
+	child: Instance,
+	container: Container,
+	before: Instance
+) => {
+	container.insertBefore(child, before);
+};
+
 export const commitUpdate = (fiber: FiberNode) => {
 	if (__DEV__) {
 		console.log("执行 Update 操作", fiber)
@@ -55,3 +63,5 @@ export const commitTextUpdate = (textInstance: TextInstance, content: string) =>
 export const removeChild = (child: Instance | TextInstance, container: Container) => {
 	container.removeChild(child)
 }
+
+

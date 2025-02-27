@@ -25,6 +25,7 @@ function App() {
 
 	return <button style="color:red" className='xxx' nam1e='666' onClick={()=>{console.log('click h1')}}>
 		{str}
+		<p>FIX</p>
 		</button>
 }
 
