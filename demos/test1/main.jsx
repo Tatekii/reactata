@@ -30,8 +30,7 @@ function App() {
 				setStr("EAT THIS !")
 			}}
 		>
-			{str.split('').map(s=><b>{s}</b>)}
-			<p>FIX</p>
+			{str}
 		</div>
 	)
 }

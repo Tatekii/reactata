@@ -7,6 +7,9 @@ import { NoFlags, Update } from "./fiberFlags"
 export const completeWork = (workInProgress: FiberNode) => {
 	const newProps = workInProgress.pendingProps
 	const current = workInProgress.alternate
+
+	console.log('completeWork',workInProgress);
+	
 	switch (workInProgress.tag) {
 		case HostRoot:
 			bubbleProperties(workInProgress)

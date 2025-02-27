@@ -28,13 +28,9 @@ export const appendChildToContainer = (child: Instance, parent: Instance | Conta
 	parent.appendChild(child)
 }
 
-export const insertChildToContainer = (
-	child: Instance,
-	container: Container,
-	before: Instance
-) => {
-	container.insertBefore(child, before);
-};
+export const insertChildToContainer = (child: Instance, container: Container, before: Instance) => {
+	container.insertBefore(child, before)
+}
 
 export const commitUpdate = (fiber: FiberNode) => {
 	if (__DEV__) {
@@ -65,3 +61,12 @@ export const removeChild = (child: Instance | TextInstance, container: Container
 }
 
 
+/**
+ * 尝试将一个回调变为微任务
+ */
+export const scheduleMicroTask =
+	typeof queueMicrotask === "function"
+		? queueMicrotask
+		: typeof Promise === "function"
+		? (callback: (...args: any) => void) => Promise.resolve(null).then(callback)
+		: setTimeout

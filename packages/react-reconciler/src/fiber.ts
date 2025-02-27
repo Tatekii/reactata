@@ -3,6 +3,7 @@ import { Props, Key, Ref, ReactElementType } from "shared/ReactTypes"
 import { Fragment, FunctionComponent, HostComponent, WorkTag } from "./workTags"
 import { NoFlags, Flags } from "./fiberFlags"
 import { Container } from "hostConfig"
+import { Lane, Lanes, NoLane, NoLanes } from "./fiberLane"
 
 /** fiber节点 */
 export class FiberNode {
@@ -52,17 +53,22 @@ export class FiberNode {
 }
 
 export class FiberRootNode {
-	container: Container
-	current: FiberNode
-	finishedWork: FiberNode | null
-
+	container: Container;
+	current: FiberNode;
+	finishedWork: FiberNode | null;
+	pendingLanes: Lanes; // 待处理的更新
+	finishedLane: Lane; // 已完成的更更新
+	
 	constructor(container: Container, hostRootFiber: FiberNode) {
-		this.container = container
-		this.current = hostRootFiber
+		this.container = container;
+		this.current = hostRootFiber;
 		// 将根节点的 stateNode 属性指向 FiberRootNode，用于表示整个 React 应用的根节点
-		hostRootFiber.stateNode = this
+		hostRootFiber.stateNode = this;
 		// 指向更新完成之后的 hostRootFiber
-		this.finishedWork = null
+		this.finishedWork = null;
+
+		this.pendingLanes = NoLanes;
+		this.finishedLane = NoLane;
 	}
 }
 
