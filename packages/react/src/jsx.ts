@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { REACT_ELEMENT_TYPE } from "shared/ReactSymbols"
 import { Type, Ref, Key, Props, ReactElementType, ElementType } from "shared/ReactTypes"
+import { REACT_FRAGMENT_TYPE, REACT_ELEMENT_TYPE } from "shared/ReactSymbols"
 
 const ReactElement = function (type: Type, key: Key, ref: Ref, props: Props): ReactElementType {
 	const element = {
@@ -50,27 +50,27 @@ export const jsx = (type: ElementType, config: any, ...children: any) => {
 	return ReactElement(type, key, ref, props)
 }
 
-export const jsxDEV = (type: ElementType, config: any,...children: any) => {
-	let key: Key = null;
-	let ref: Ref = null;
-	const props: Props = {};
+export const jsxDEV = (type: ElementType, config: any, ...children: any) => {
+	let key: Key = null
+	let ref: Ref = null
+	const props: Props = {}
 
 	for (const prop in config) {
-		const val = config[prop];
-		if (prop === 'key') {
+		const val = config[prop]
+		if (prop === "key") {
 			if (val !== undefined) {
-				key = '' + val;
+				key = "" + val
 			}
-			continue;
+			continue
 		}
-		if (prop === 'ref') {
+		if (prop === "ref") {
 			if (val !== undefined) {
-				ref = val;
+				ref = val
 			}
-			continue;
+			continue
 		}
 		if ({}.hasOwnProperty.call(config, prop)) {
-			props[prop] = val;
+			props[prop] = val
 		}
 	}
 
@@ -83,5 +83,7 @@ export const jsxDEV = (type: ElementType, config: any,...children: any) => {
 	// 	}
 	// }
 
-	return ReactElement(type, key, ref, props);
-};
+	return ReactElement(type, key, ref, props)
+}
+
+export const Fragment = REACT_FRAGMENT_TYPE

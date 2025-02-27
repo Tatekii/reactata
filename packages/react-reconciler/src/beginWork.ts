@@ -1,7 +1,7 @@
 import { ReactElementType } from "shared/ReactTypes"
 import { FiberNode } from "./fiber"
 import { UpdateQueue, processUpdateQueue } from "./updateQueue"
-import { FunctionComponent, HostComponent, HostRoot, HostText } from "./workTags"
+import { Fragment, FunctionComponent, HostComponent, HostRoot, HostText } from "./workTags"
 import { reconcileChildFibers, mountChildFibers } from "./childFiber"
 import { renderWithHooks } from "./fiberHooks"
 
@@ -24,6 +24,10 @@ export const beginWork = (workInProgress: FiberNode) => {
 		// 函数组件
 		case FunctionComponent:
 			return updateFunctionComponent(workInProgress)
+
+		// Fragment
+		case Fragment:
+			return updateFragment(workInProgress)
 		default:
 			if (__DEV__) {
 				console.warn("beginWork 未实现的类型", workInProgress.tag)
@@ -42,7 +46,7 @@ function updateHostRoot(workInProgress: FiberNode) {
 
 	// 计算待更新状态的最新值
 	const { memorizedState } = processUpdateQueue(baseState, pending)
-	
+
 	workInProgress.memorizedState = memorizedState
 
 	// 处理子节点的更新逻辑
@@ -77,9 +81,14 @@ function reconcileChildren(workInProgress: FiberNode, children?: ReactElementTyp
 	}
 }
 
-
 function updateFunctionComponent(workInProgress: FiberNode) {
-	const nextChildren = renderWithHooks(workInProgress);
-	reconcileChildren(workInProgress, nextChildren);
-	return workInProgress.child;
+	const nextChildren = renderWithHooks(workInProgress)
+	reconcileChildren(workInProgress, nextChildren)
+	return workInProgress.child
+}
+
+function updateFragment(workInProgress: FiberNode) {
+	const nextChildren = workInProgress.pendingProps
+	reconcileChildren(workInProgress, nextChildren as any)
+	return workInProgress.child
 }

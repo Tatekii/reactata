@@ -1,6 +1,6 @@
 import { appendInitialChild, Container, createInstance, createTextInstance } from "hostConfig"
 import { FiberNode } from "./fiber"
-import { FunctionComponent, HostComponent, HostRoot, HostText } from "./workTags"
+import {  Fragment, FunctionComponent, HostComponent, HostRoot, HostText } from "./workTags"
 import { NoFlags, Update } from "./fiberFlags"
 
 // 收集更新 flags,构建DOM结构
@@ -42,6 +42,10 @@ export const completeWork = (workInProgress: FiberNode) => {
 			return null
 
 		case FunctionComponent:
+			bubbleProperties(workInProgress)
+			return null
+
+		case Fragment:
 			bubbleProperties(workInProgress)
 			return null
 

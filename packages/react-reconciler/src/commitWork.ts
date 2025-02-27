@@ -82,8 +82,8 @@ const commitPlacement = (finishedWork: FiberNode) => {
 	// 插入之insertBefore的的兄弟节点
 	const sibling = getHostSibling(finishedWork)
 
-	if (hostParent && sibling) {
-		appendPlacementNodeIntoContainer(finishedWork, hostParent)
+	if (hostParent) {
+		appendPlacementNodeIntoContainer(finishedWork, hostParent, sibling)
 	}
 }
 
@@ -182,6 +182,21 @@ const appendPlacementNodeIntoContainer = (finishedWork: FiberNode, hostParent: C
 	}
 }
 
+function recordChildrenToDelete(childrenToDelete: FiberNode[], unmountFiber: FiberNode) {
+	const lastOne = childrenToDelete[childrenToDelete.length - 1]
+	if (!lastOne) {
+		childrenToDelete.push(unmountFiber)
+	} else {
+		let node = lastOne.sibling
+		while (node !== null) {
+			if (unmountFiber == node) {
+				childrenToDelete.push(unmountFiber)
+			}
+			node = node.sibling
+		}
+	}
+}
+
 // 删除节点及其子树
 const commitDeletion = (childToDelete: FiberNode) => {
 	if (__DEV__) {
@@ -189,21 +204,19 @@ const commitDeletion = (childToDelete: FiberNode) => {
 	}
 
 	// 子树的根节点
-	let rootHostNode: FiberNode | null = null
+	// 有了fragment，可能需要移除多个子节点
+	// 需要移除的子树根节点
+	const rootChildrenToDelete: FiberNode[] = []
 
 	// 递归遍历子树
 	commitNestedUnmounts(childToDelete, (unmountFiber) => {
 		switch (unmountFiber.tag) {
 			case HostComponent:
-				if (rootHostNode === null) {
-					rootHostNode = unmountFiber
-				}
+				recordChildrenToDelete(rootChildrenToDelete, unmountFiber)
 				// TODO 解绑ref
 				return
 			case HostText:
-				if (rootHostNode === null) {
-					rootHostNode = unmountFiber
-				}
+				recordChildrenToDelete(rootChildrenToDelete, unmountFiber)
 				return
 			case FunctionComponent:
 				//  TODO 解绑ref，执行 useUnmount
@@ -216,10 +229,13 @@ const commitDeletion = (childToDelete: FiberNode) => {
 	})
 
 	// 移除 rootHostNode 的DOM
-	if (rootHostNode !== null) {
+	if (rootChildrenToDelete.length > 0) {
 		// 找到待删除子树的根节点的 parent DOM
 		const hostParent = getHostParent(childToDelete) as Container
-		removeChild((rootHostNode as FiberNode).stateNode, hostParent)
+
+		rootChildrenToDelete.forEach((node) => {
+			removeChild(node.stateNode, hostParent)
+		})
 	}
 
 	childToDelete.return = null

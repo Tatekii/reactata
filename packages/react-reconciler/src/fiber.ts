@@ -1,6 +1,6 @@
 // packages/react-reconciler/src/fiber.ts
 import { Props, Key, Ref, ReactElementType } from "shared/ReactTypes"
-import { FunctionComponent, HostComponent, WorkTag } from "./workTags"
+import { Fragment, FunctionComponent, HostComponent, WorkTag } from "./workTags"
 import { NoFlags, Flags } from "./fiberFlags"
 import { Container } from "hostConfig"
 
@@ -126,4 +126,16 @@ export function createFiberFromElement(element: ReactElementType): FiberNode {
 	fiber.type = type
 
 	return fiber
+}
+
+
+/**
+ * 根据fragment创建fiberNode
+ * @param elements 
+ * @param key 
+ * @returns 
+ */
+export function createFiberFromFragment(elements: any[], key: Key): FiberNode {
+	const fiber = new FiberNode(Fragment, elements, key);
+	return fiber;
 }
