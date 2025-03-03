@@ -5,7 +5,7 @@ import { commitMutationEffects } from "./commitWork"
 import { completeWork } from "./completeWork"
 import { createWorkInProgress, FiberNode, FiberRootNode } from "./fiber"
 import { MutationMask, NoFlags } from "./fiberFlags"
-import { Lane, NoLane, SyncLane } from "./fiberLane"
+import { Lane, NoLane, SyncLane } from "./fiberLanes"
 import { getHighestPriorityLane, mergeLanes } from "./fiberLanes"
 import { flushSyncCallback, scheduleSyncCallback } from "./syncTaskQueue"
 import { HostRoot } from "./workTags"
@@ -102,6 +102,7 @@ function completeUnitOfWork(fiber: FiberNode) {
 
 // 调度更新
 export function scheduleUpdateOnFiber(fiber: FiberNode, lane: Lane) {
+	
 	const root = markUpdateFromFiberToRoot(fiber)
 
 	markRootUpdated(root, lane)

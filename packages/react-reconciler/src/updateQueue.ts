@@ -1,7 +1,7 @@
 import { Action } from "shared/ReactTypes"
 import { Update } from "./fiberFlags"
 import { Dispatch } from "react/src/currentDispatcher"
-import { Lane } from "./fiberLane"
+import { Lane } from "./fiberLanes"
 
 // 定义 Update 数据结构
 export interface Update<State> {

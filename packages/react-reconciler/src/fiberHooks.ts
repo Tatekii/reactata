@@ -4,7 +4,7 @@ import internals from "shared/internals"
 import { createUpdate, createUpdateQueue, enqueueUpdate, processUpdateQueue, UpdateQueue } from "./updateQueue"
 import { Action } from "shared/ReactTypes"
 import { scheduleUpdateOnFiber } from "./workLoop"
-import { Lane, NoLane } from "./fiberLane"
+import { Lane, NoLane } from "./fiberLanes"
 import { requestUpdateLanes } from "./fiberLanes"
 
 const { currentDispatcher } = internals

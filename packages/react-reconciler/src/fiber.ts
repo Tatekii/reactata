@@ -3,7 +3,7 @@ import { Props, Key, Ref, ReactElementType } from "shared/ReactTypes"
 import { Fragment, FunctionComponent, HostComponent, WorkTag } from "./workTags"
 import { NoFlags, Flags } from "./fiberFlags"
 import { Container } from "hostConfig"
-import { Lane, Lanes, NoLane, NoLanes } from "./fiberLane"
+import { Lane, Lanes, NoLane, NoLanes } from "./fiberLanes"
 
 /** fiber节点 */
 export class FiberNode {

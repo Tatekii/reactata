@@ -4,7 +4,7 @@ import { UpdateQueue, processUpdateQueue } from "./updateQueue"
 import { Fragment, FunctionComponent, HostComponent, HostRoot, HostText } from "./workTags"
 import { reconcileChildFibers, mountChildFibers } from "./childFiber"
 import { renderWithHooks } from "./fiberHooks"
-import { Lane } from "./fiberLane"
+import { Lane } from "./fiberLanes"
 
 /**
  *
